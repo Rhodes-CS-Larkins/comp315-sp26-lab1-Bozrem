@@ -21,8 +21,9 @@ int main(int argc, char **argv) {
   char *ponghost = strdup("localhost"); // default host
   char *pongport = strdup(PORTNO);      // default port
   int arraysize = 100;                  // default packet size
+  int verbose = 0;
 
-  while ((ch = getopt(argc, argv, "h:n:p:s:")) != -1) { // It was missing -s
+  while ((ch = getopt(argc, argv, "h:n:p:s:v")) != -1) { // It was missing -s
     switch (ch) {
     case 'h':
       ponghost = strdup(optarg);
@@ -36,9 +37,12 @@ int main(int argc, char **argv) {
     case 's':
       arraysize = atoi(optarg);
       break;
+    case 'v':
+      verbose = 1;
+      break;
     default:
       fprintf(stderr,
-              "usage: ping [-h host] [-n #pings] [-p port] [-s size]\n");
+              "usage: ping [-h host] [-n #pings] [-p port] [-s size] [-v]\n");
     }
   }
 
@@ -51,9 +55,12 @@ int main(int argc, char **argv) {
 
   int s = getaddrinfo(ponghost, pongport, &hints, &result);
   if (s != 0) {
-    perror("Failed getaddrinfo");
-    exit(1);
+    fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
+    exit(EXIT_FAILURE);
   }
+
+  if (verbose)
+    printf("Got addrinfo\n");
 
   int sockfd = -1;
 
@@ -64,6 +71,9 @@ int main(int argc, char **argv) {
     if (sockfd != -1)
       break;
   }
+
+  if (verbose)
+    printf("Exited sock loop with sockfd of %d\n", sockfd);
 
   if (res_ptr == NULL) {
     fprintf(stderr, "Failed to create a socket to ping.\n");
@@ -79,9 +89,15 @@ int main(int argc, char **argv) {
 
   char *res_dgram = calloc(arraysize, sizeof(char)); // TODO: Error Check:
 
+  if (verbose)
+    printf("Allocated dgram and res_dgram\n");
+
   double total_comm_time = 0;
 
   for (int p = 0; p < nping; p++) {
+    if (verbose)
+      printf("Trying loop %d\n", p);
+
     double stime = get_wctime();
     if (sendto(sockfd, dgram, arraysize, 0, res_ptr->ai_addr,
                res_ptr->ai_addrlen) != arraysize) {
@@ -89,11 +105,17 @@ int main(int argc, char **argv) {
       continue;
     }
 
+    if (verbose)
+      printf("Sucessfully sent packet\n");
+
     if (recvfrom(sockfd, res_dgram, arraysize, 0, res_ptr->ai_addr,
                  &res_ptr->ai_addrlen) != arraysize) {
       printf("Failed to receive: message length mismatch. Skipping...\n");
       continue;
     }
+
+    if (verbose)
+      printf("Sucessfully received packet\n");
 
     int valid = 1;
     // Validate res
@@ -109,13 +131,18 @@ int main(int argc, char **argv) {
     if (!valid)
       break;
 
+    if (verbose)
+      printf("Validated\n");
+
     double comm_time = get_wctime() - stime;
     total_comm_time += comm_time;
 
     printf("\nSuccess in %f seconds\n", comm_time);
   }
 
-  // TODO: Stats printing
+  printf("Sent %d packets of %d bytes in %f ms (%f ms / good packet)\n", nping,
+         arraysize, total_comm_time,
+         total_comm_time / arraysize); // TODO: only count REAL packets
 
   printf("nping: %d arraysize: %d errors: %d ponghost: %s pongport: %s\n",
          nping, arraysize, errors, ponghost, pongport);
