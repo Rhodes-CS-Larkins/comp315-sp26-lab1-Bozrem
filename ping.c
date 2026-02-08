@@ -84,10 +84,11 @@ int main(int argc, char **argv) {
   // connection
 
   // Set up the datagram here
-  char *dgram = malloc(arraysize * sizeof(char)); // TODO: Error check
+  unsigned char *dgram = malloc(arraysize * sizeof(char)); // TODO: Error check
   memset(dgram, 200, arraysize);
 
-  char *res_dgram = calloc(arraysize, sizeof(char)); // TODO: Error Check:
+  unsigned char *res_dgram =
+      calloc(arraysize, sizeof(char)); // TODO: Error Check:
 
   if (verbose)
     printf("Allocated dgram and res_dgram\n");
@@ -105,8 +106,12 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    if (verbose)
-      printf("Sucessfully sent packet\n");
+    if (verbose) {
+      printf("Sucessfully sent packet:\n");
+      for (int j = 0; j < arraysize; j++)
+        printf("%d, ", dgram[j]);
+      printf("\n");
+    }
 
     if (recvfrom(sockfd, res_dgram, arraysize, 0, res_ptr->ai_addr,
                  &res_ptr->ai_addrlen) != arraysize) {
@@ -114,8 +119,12 @@ int main(int argc, char **argv) {
       continue;
     }
 
-    if (verbose)
-      printf("Sucessfully received packet\n");
+    if (verbose) {
+      printf("Sucessfully received packet:\n");
+      for (int j = 0; j < arraysize; j++)
+        printf("%d, ", res_dgram[j]);
+      printf("\n");
+    }
 
     int valid = 1;
     // Validate res

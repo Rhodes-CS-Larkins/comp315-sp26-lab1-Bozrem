@@ -77,8 +77,7 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  char dgram_buf[BUF_SIZE]; // TODO: Does this need to be dynamic or can I just
-                            // set it reasonably large?
+  unsigned char dgram_buf[BUF_SIZE];
 
   struct sockaddr_storage peer_addr;
   socklen_t peer_addr_len;
@@ -92,8 +91,8 @@ int main(int argc, char **argv) {
       continue;
 
     // Add 1 to all
-    for (int i = 0; i < packet_size; i++)
-      dgram_buf[i]++;
+    for (int j = 0; j < packet_size; j++)
+      dgram_buf[j]++;
 
     // send back
     char host[NI_MAXHOST], service[NI_MAXSERV];
@@ -108,8 +107,6 @@ int main(int argc, char **argv) {
     if (sendto(sockfd, dgram_buf, packet_size, 0, (struct sockaddr *)&peer_addr,
                peer_addr_len) != packet_size)
       fprintf(stderr, "Did not send correct packet size on return.\n");
-
-    nping--;
   }
 
   printf("nping: %d pongport: %s\n", nping, pongport);
