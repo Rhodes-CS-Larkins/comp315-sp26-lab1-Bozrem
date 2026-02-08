@@ -133,6 +133,7 @@ int main(int argc, char **argv) {
         printf("Failed to validate res at index %d. Expected 201, got %d.\n", i,
                res_dgram[i]);
         valid = 0;
+        errors++;
         break;
       }
     }
@@ -146,12 +147,12 @@ int main(int argc, char **argv) {
     double comm_time = get_wctime() - stime;
     total_comm_time += comm_time;
 
-    printf("\nSuccess in %f seconds\n", comm_time);
+    printf("ping[%d]: round-trip time: %f ms\n", p, (comm_time * 1000));
   }
 
   printf("Sent %d packets of %d bytes in %f ms (%f ms / good packet)\n", nping,
-         arraysize, total_comm_time,
-         total_comm_time / arraysize); // TODO: only count REAL packets
+         (arraysize - errors), 1000 * total_comm_time,
+         (1000 * total_comm_time) / (nping - errors));
 
   printf("nping: %d arraysize: %d errors: %d ponghost: %s pongport: %s\n",
          nping, arraysize, errors, ponghost, pongport);
