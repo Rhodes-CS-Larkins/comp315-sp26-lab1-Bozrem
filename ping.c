@@ -26,12 +26,14 @@ int main(int argc, char **argv) {
   while ((ch = getopt(argc, argv, "h:n:p:s:v")) != -1) { // It was missing -s
     switch (ch) {
     case 'h':
+      free(ponghost);
       ponghost = strdup(optarg);
       break;
     case 'n':
       nping = atoi(optarg);
       break;
     case 'p':
+      free(pongport);
       pongport = strdup(optarg);
       break;
     case 's':
@@ -157,6 +159,9 @@ int main(int argc, char **argv) {
   printf("nping: %d arraysize: %d errors: %d ponghost: %s pongport: %s\n",
          nping, arraysize, errors, ponghost, pongport);
 
+  close(sockfd);
+  free(ponghost);
+  free(pongport);
   free(dgram);
   free(res_dgram);
   freeaddrinfo(result);

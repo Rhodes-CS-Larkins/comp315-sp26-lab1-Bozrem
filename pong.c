@@ -29,6 +29,7 @@ int main(int argc, char **argv) {
       nping = atoi(optarg);
       break;
     case 'p':
+      free(pongport);
       pongport = strdup(optarg);
       break;
     case 'v':
@@ -110,6 +111,9 @@ int main(int argc, char **argv) {
   }
 
   printf("nping: %d pongport: %s\n", nping, pongport);
+
+  close(sockfd);
+  free(pongport);
 
   return 0;
 }
