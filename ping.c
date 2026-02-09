@@ -83,10 +83,18 @@ int main(int argc, char **argv) {
   // connection
 
   // Set up the datagram here
-  dgram = malloc(arraysize * sizeof(char)); // TODO: Error check
+  dgram = malloc(arraysize * sizeof(char));
+  if (!dgram) {
+    perror("Dgram malloc failed");
+    goto cleanup;
+  }
   memset(dgram, 200, arraysize);
 
-  res_dgram = calloc(arraysize, sizeof(char)); // TODO: Error Check:
+  res_dgram = calloc(arraysize, sizeof(char));
+  if (!res_dgram) {
+    perror("Res Dgram malloc failed");
+    goto cleanup;
+  }
 
   double total_comm_time = 0;
 
