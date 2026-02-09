@@ -1,5 +1,5 @@
 CC=clang
-CFLAGS=-g -Wall -Werror
+CFLAGS=-g -Wall -Werror -gdwarf-4
 
 OBJS = util.o
 
