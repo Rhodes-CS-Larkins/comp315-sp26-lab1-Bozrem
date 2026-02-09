@@ -55,9 +55,6 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
 
-  if (verbose)
-    printf("Got addrinfo\n");
-
   for (res_ptr = result; res_ptr != NULL; res_ptr = res_ptr->ai_next) {
     sockfd =
         socket(res_ptr->ai_family, res_ptr->ai_socktype, res_ptr->ai_protocol);
@@ -67,9 +64,6 @@ int main(int argc, char **argv) {
     if (bind(sockfd, res_ptr->ai_addr, res_ptr->ai_addrlen) == 0)
       break; // Successful socket binding
   }
-
-  if (verbose)
-    printf("Established socket with sockfd of %d\n", sockfd);
 
   freeaddrinfo(result);
 

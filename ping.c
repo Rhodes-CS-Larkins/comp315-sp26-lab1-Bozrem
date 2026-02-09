@@ -66,9 +66,6 @@ int main(int argc, char **argv) {
     goto cleanup;
   }
 
-  if (verbose)
-    printf("Got addrinfo\n");
-
   for (res_ptr = result; res_ptr != NULL; res_ptr = res_ptr->ai_next) {
     sockfd =
         socket(res_ptr->ai_family, res_ptr->ai_socktype, res_ptr->ai_protocol);
@@ -76,9 +73,6 @@ int main(int argc, char **argv) {
     if (sockfd != -1)
       break;
   }
-
-  if (verbose)
-    printf("Exited sock loop with sockfd of %d\n", sockfd);
 
   if (res_ptr == NULL) {
     fprintf(stderr, "Failed to create a socket to ping.\n");
@@ -94,15 +88,9 @@ int main(int argc, char **argv) {
 
   res_dgram = calloc(arraysize, sizeof(char)); // TODO: Error Check:
 
-  if (verbose)
-    printf("Allocated dgram and res_dgram\n");
-
   double total_comm_time = 0;
 
   for (int p = 0; p < nping; p++) {
-    if (verbose)
-      printf("Trying loop %d\n", p);
-
     double stime = get_wctime();
     if (sendto(sockfd, dgram, arraysize, 0, res_ptr->ai_addr,
                res_ptr->ai_addrlen) != arraysize) {
@@ -144,9 +132,6 @@ int main(int argc, char **argv) {
 
     if (!valid)
       break;
-
-    if (verbose)
-      printf("Validated\n");
 
     double comm_time = get_wctime() - stime;
     total_comm_time += comm_time;
