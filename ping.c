@@ -23,6 +23,11 @@ int main(int argc, char **argv) {
   int arraysize = 100;                  // default packet size
   int verbose = 0;
 
+  int sockfd = -1;
+
+  unsigned char *dgram = NULL; // Init so cleanup doesn't throw a fit
+  unsigned char *res_dgram = NULL;
+
   while ((ch = getopt(argc, argv, "h:n:p:s:v")) != -1) { // It was missing -s
     switch (ch) {
     case 'h':
@@ -58,13 +63,11 @@ int main(int argc, char **argv) {
   int s = getaddrinfo(ponghost, pongport, &hints, &result);
   if (s != 0) {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
-    exit(EXIT_FAILURE);
+    goto cleanup;
   }
 
   if (verbose)
     printf("Got addrinfo\n");
-
-  int sockfd = -1;
 
   for (res_ptr = result; res_ptr != NULL; res_ptr = res_ptr->ai_next) {
     sockfd =
@@ -79,18 +82,17 @@ int main(int argc, char **argv) {
 
   if (res_ptr == NULL) {
     fprintf(stderr, "Failed to create a socket to ping.\n");
-    exit(1);
+    goto cleanup;
   }
 
   // Socket is set up, but not connected because udp. sendto() sends without
   // connection
 
   // Set up the datagram here
-  unsigned char *dgram = malloc(arraysize * sizeof(char)); // TODO: Error check
+  dgram = malloc(arraysize * sizeof(char)); // TODO: Error check
   memset(dgram, 200, arraysize);
 
-  unsigned char *res_dgram =
-      calloc(arraysize, sizeof(char)); // TODO: Error Check:
+  res_dgram = calloc(arraysize, sizeof(char)); // TODO: Error Check:
 
   if (verbose)
     printf("Allocated dgram and res_dgram\n");
@@ -159,12 +161,17 @@ int main(int argc, char **argv) {
   printf("nping: %d arraysize: %d errors: %d ponghost: %s pongport: %s\n",
          nping, arraysize, errors, ponghost, pongport);
 
-  close(sockfd);
+cleanup:
+  if (sockfd != -1)
+    close(sockfd);
   free(ponghost);
   free(pongport);
-  free(dgram);
-  free(res_dgram);
-  freeaddrinfo(result);
+  if (dgram)
+    free(dgram);
+  if (res_dgram)
+    free(res_dgram);
+  if (result)
+    freeaddrinfo(result);
 
   return 0;
 }

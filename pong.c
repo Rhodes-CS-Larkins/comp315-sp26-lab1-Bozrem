@@ -23,6 +23,8 @@ int main(int argc, char **argv) {
   char *pongport = strdup(PORTNO); // default port
   int verbose = 0;
 
+  int sockfd = -1;
+
   while ((ch = getopt(argc, argv, "n:p:v")) != -1) {
     switch (ch) {
     case 'n':
@@ -45,18 +47,16 @@ int main(int argc, char **argv) {
   // A lot of this follows the man page example pretty closely
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_DGRAM;
-  hints.ai_flags = AI_PASSIVE; // TODO: Figure out what this actually does
+  hints.ai_flags = AI_PASSIVE;
 
   int s = getaddrinfo(NULL, pongport, &hints, &result);
   if (s != 0) {
     fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(s));
-    exit(EXIT_FAILURE);
+    goto cleanup;
   }
 
   if (verbose)
     printf("Got addrinfo\n");
-
-  int sockfd;
 
   for (res_ptr = result; res_ptr != NULL; res_ptr = res_ptr->ai_next) {
     sockfd =
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 
   if (res_ptr == NULL) {
     fprintf(stderr, "Failed to bind to a socket.\n");
-    exit(1);
+    goto cleanup;
   }
 
   unsigned char dgram_buf[BUF_SIZE];
@@ -112,7 +112,9 @@ int main(int argc, char **argv) {
 
   printf("nping: %d pongport: %s\n", nping, pongport);
 
-  close(sockfd);
+cleanup:
+  if (sockfd != -1)
+    close(sockfd);
   free(pongport);
 
   return 0;
