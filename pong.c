@@ -15,13 +15,13 @@
 #include "util.h"
 
 #define PORTNO "1266"
-#define BUF_SIZE 1024
+#define BUF_SIZE 65535 // Max UDP Packet size
 
 int main(int argc, char **argv) {
   int ch;
   int nping = 1;                   // default packet count
   char *pongport = strdup(PORTNO); // default port
-  int verbose = 0;
+  // int verbose = 0;
 
   int sockfd = -1;
 
@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
       pongport = strdup(optarg);
       break;
     case 'v':
-      verbose = 1;
+      // verbose = 1;
       break;
     default:
       fprintf(stderr, "usage: pong [-n #pings] [-p port] [-v]\n");
